@@ -9,12 +9,14 @@ namespace ToDoList
     private int _id;
     private string _description;
     private bool _taskComplete;
+    private DateTime _dueDate;
 
-    public Task(string Description, bool taskComplete = false, int Id = 0)
+    public Task(string Description, DateTime dueDate, bool taskComplete = false,  int Id = 0)
     {
       _id = Id;
       _description = Description;
       _taskComplete = taskComplete;
+      _dueDate = dueDate;
     }
 
     public override bool Equals(System.Object otherTask)
@@ -43,6 +45,14 @@ namespace ToDoList
     {
       _description = newDescription;
     }
+    public DateTime GetTaskDueDate()
+    {
+      return _dueDate;
+    }
+    public void SetTaskDueDate(DateTime newDueDate)
+    {
+      _dueDate = newDueDate;
+    }
     public bool GetTaskComplete()
     {
       return _taskComplete;
@@ -59,7 +69,7 @@ namespace ToDoList
       SqlDataReader rdr = null;
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("SELECT * FROM tasks", conn);
+      SqlCommand cmd = new SqlCommand("SELECT * FROM tasks ORDER BY due_date", conn);
       rdr = cmd.ExecuteReader();
 
       while(rdr.Read())
@@ -67,7 +77,8 @@ namespace ToDoList
         int taskId = rdr.GetInt32(0);
         string taskDescription = rdr.GetString(1);
         bool taskComplete = rdr.GetBoolean(2);
-        Task newTask = new Task(taskDescription,taskComplete, taskId);
+        DateTime taskDueDate = rdr.GetDateTime(3);
+        Task newTask = new Task(taskDescription, taskDueDate, taskComplete, taskId);
         AllTasks.Add(newTask);
       }
       if (rdr != null)
@@ -86,7 +97,7 @@ namespace ToDoList
       SqlDataReader rdr;
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description, taskComplete) OUTPUT INSERTED.id VALUES (@TaskDescription, @taskComplete)", conn);
+      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description, due_date, taskComplete) OUTPUT INSERTED.id VALUES (@TaskDescription, @TaskDueDate, @taskComplete)", conn);
 
       SqlParameter descriptionParam = new SqlParameter();
       descriptionParam.ParameterName = "@TaskDescription";
@@ -99,6 +110,12 @@ namespace ToDoList
       taskCompleteParam.Value = this.GetTaskComplete();
 
       cmd.Parameters.Add(taskCompleteParam);
+
+      SqlParameter TaskDueDateParam = new SqlParameter();
+      TaskDueDateParam.ParameterName = "@TaskDueDate";
+      TaskDueDateParam.Value = this.GetTaskDueDate();
+
+      cmd.Parameters.Add(TaskDueDateParam);
 
       rdr = cmd.ExecuteReader();
 
@@ -140,14 +157,16 @@ namespace ToDoList
       int foundTaskId = 0;
       string foundTaskDescription = null;
       bool foundtaskComplete = false;
+      DateTime foundTaskDueDate = DateTime.MinValue;
 
       while(rdr.Read())
       {
         foundTaskId = rdr.GetInt32(0);
         foundTaskDescription = rdr.GetString(1);
         foundtaskComplete = rdr.GetBoolean(2);
+        foundTaskDueDate = rdr.GetDateTime(3);
       }
-      Task foundTask = new Task(foundTaskDescription, foundtaskComplete, foundTaskId);
+      Task foundTask = new Task(foundTaskDescription, foundTaskDueDate, foundtaskComplete, foundTaskId);
 
       if (rdr != null)
       {

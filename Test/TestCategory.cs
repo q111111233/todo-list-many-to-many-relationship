@@ -59,18 +59,18 @@ namespace ToDoList
       Category testCategory = new Category("Household chores");
       testCategory.Save();
 
-      Task testTask = new Task("Mow the lawn");
+      Task testTask = new Task("Mow the lawn", new DateTime(2016, 5, 4));
       testTask.Save();
 
-      Task testTask2 = new Task("Water the garden");
+      Task testTask2 = new Task("Water the garden", new DateTime(2016, 5, 4));
       testTask2.Save();
 
       //Act
       testCategory.AddTask(testTask);
       testCategory.AddTask(testTask2);
-
       List<Task> result = testCategory.GetTasks();
       List<Task> testList = new List<Task>{testTask, testTask2};
+      Console.WriteLine(result);
 
       //Assert
       Assert.Equal(testList, result);
@@ -79,7 +79,7 @@ namespace ToDoList
     public void Test_Delete_DeletesCategoryAssociationsFromDatabase()
     {
       //Arrange
-      Task testTask = new Task("Mow the lawn");
+      Task testTask = new Task("Mow the lawn", new DateTime(2016, 5, 4));
       testTask.Save();
 
       string testName = "Home stuff";

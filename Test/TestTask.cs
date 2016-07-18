@@ -17,7 +17,7 @@ namespace ToDoList
     public void Test_AddCategory_AddsCategoryToTask()
     {
       //Arrange
-      Task testTask = new Task("Mow the lawn");
+      Task testTask = new Task("Mow the lawn", new DateTime(2016, 5, 4));
       testTask.Save();
 
       Category testCategory = new Category("Home stuff");
@@ -37,7 +37,7 @@ namespace ToDoList
     public void Test_GetCategories_ReturnsAllTaskCategories()
     {
       //Arrange
-      Task testTask = new Task("Mow the lawn");
+      Task testTask = new Task("Mow the lawn", new DateTime(2016, 5, 4));
       testTask.Save();
 
       Category testCategory1 = new Category("Home stuff");
@@ -63,7 +63,8 @@ namespace ToDoList
       testCategory.Save();
 
       string testDescription = "Mow the lawn";
-      Task testTask = new Task(testDescription);
+      DateTime testDuedate = new DateTime(2016, 5, 4);
+      Task testTask = new Task(testDescription, testDuedate);
       testTask.Save();
 
       //Act

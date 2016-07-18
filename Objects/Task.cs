@@ -8,11 +8,13 @@ namespace ToDoList
   {
     private int _id;
     private string _description;
+    private bool _taskComplete;
 
-    public Task(string Description, int Id = 0)
+    public Task(string Description, bool taskComplete = false, int Id = 0)
     {
       _id = Id;
       _description = Description;
+      _taskComplete = taskComplete;
     }
 
     public override bool Equals(System.Object otherTask)
@@ -41,6 +43,14 @@ namespace ToDoList
     {
       _description = newDescription;
     }
+    public bool GetTaskComplete()
+    {
+      return _taskComplete;
+    }
+    public void SetTaskComplete(bool newTaskComplete)
+    {
+      _taskComplete = newTaskComplete;
+    }
     public static List<Task> GetAll()
     {
       List<Task> AllTasks = new List<Task>{};
@@ -56,7 +66,8 @@ namespace ToDoList
       {
         int taskId = rdr.GetInt32(0);
         string taskDescription = rdr.GetString(1);
-        Task newTask = new Task(taskDescription, taskId);
+        bool taskComplete = rdr.GetBoolean(2);
+        Task newTask = new Task(taskDescription,taskComplete, taskId);
         AllTasks.Add(newTask);
       }
       if (rdr != null)
@@ -75,13 +86,19 @@ namespace ToDoList
       SqlDataReader rdr;
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description) OUTPUT INSERTED.id VALUES (@TaskDescription)", conn);
+      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description, taskComplete) OUTPUT INSERTED.id VALUES (@TaskDescription, @taskComplete)", conn);
 
       SqlParameter descriptionParam = new SqlParameter();
       descriptionParam.ParameterName = "@TaskDescription";
       descriptionParam.Value = this.GetDescription();
 
       cmd.Parameters.Add(descriptionParam);
+
+      SqlParameter taskCompleteParam = new SqlParameter();
+      taskCompleteParam.ParameterName = "@taskComplete";
+      taskCompleteParam.Value = this.GetTaskComplete();
+
+      cmd.Parameters.Add(taskCompleteParam);
 
       rdr = cmd.ExecuteReader();
 
@@ -122,13 +139,15 @@ namespace ToDoList
 
       int foundTaskId = 0;
       string foundTaskDescription = null;
+      bool foundtaskComplete = false;
 
       while(rdr.Read())
       {
         foundTaskId = rdr.GetInt32(0);
         foundTaskDescription = rdr.GetString(1);
+        foundtaskComplete = rdr.GetBoolean(2);
       }
-      Task foundTask = new Task(foundTaskDescription, foundTaskId);
+      Task foundTask = new Task(foundTaskDescription, foundtaskComplete, foundTaskId);
 
       if (rdr != null)
       {
@@ -237,6 +256,42 @@ namespace ToDoList
 
       cmd.Parameters.Add(taskIdParameter);
       cmd.ExecuteNonQuery();
+
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
+
+    public void Update(bool newComplete)
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("UPDATE tasks SET taskComplete = @NewName OUTPUT INSERTED.taskComplete WHERE id = @CategoryId;", conn);
+
+      SqlParameter newNameParameter = new SqlParameter();
+      newNameParameter.ParameterName = "@NewName";
+      newNameParameter.Value = newComplete;
+      cmd.Parameters.Add(newNameParameter);
+
+
+      SqlParameter categoryIdParameter = new SqlParameter();
+      categoryIdParameter.ParameterName = "@CategoryId";
+      categoryIdParameter.Value = this.GetId();
+      cmd.Parameters.Add(categoryIdParameter);
+      rdr = cmd.ExecuteReader();
+
+      while(rdr.Read())
+      {
+        this._taskComplete = rdr.GetBoolean(0);
+      }
+
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
 
       if (conn != null)
       {

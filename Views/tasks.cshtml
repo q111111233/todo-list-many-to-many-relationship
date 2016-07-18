@@ -1,0 +1,25 @@
+@if (@Model.Count == 0)
+{
+  <p>No tasks have been added yet!</p>
+}
+else
+{
+  <h1>Here is your list of tasks:</h1>
+  <ul>
+    @foreach (var task in Model)
+    {
+      <li><a href="/tasks/@task.GetId()">@task.GetDescription()</a>
+        <form action="/taskComplete" method="post">
+          <input type="text" name="GetId" value = "@task.GetId()">
+          <label for="task-complete">Done</label>
+          <input type="checkbox" name="task-complete" value = "true" >
+        <button type='submit'>Add</button>
+      </form></li>
+    }
+  </ul>
+  <form action="/tasks/delete" method="post">
+    <button type="submit">Clear all tasks</button>
+  </form>
+}
+<p><a href="/tasks/new">Add a new task</a></p>
+<p><a href="/">Return home</a></p>
